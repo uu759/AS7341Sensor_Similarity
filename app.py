@@ -79,7 +79,7 @@ def read_from_serial():
                         'F7': data_values[6], 'F8': data_values[7], 'Clear': data_values[8],
                         'NIR': data_values[9]
                     }
-                    # print(f"[DEBUG] 원본 센서 데이터: {sensor_data}") # 원본 데이터 로그 추가
+                    # print(f"[DEBUG] 원본 센서 데이터: {sensor_data}") # 원본 데이터 로그
                     latest_sensor_data = sensor_data
                     socketio.emit('sensor_update', sensor_data)
                     # print("[DEBUG] 'sensor_update' 이벤트 발생시킴.")
