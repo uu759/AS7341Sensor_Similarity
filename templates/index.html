@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AS7341 센서 데이터</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #34495e;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+        .data-item {
+            background-color: #e9ecef;
+            padding: 12px 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 0.95em;
+            color: #555;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .data-item strong {
+            display: block;
+            font-size: 1.1em;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            align-items: center;
+        }
+        .input-group input[type="text"],
+        .input-group select {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .input-group button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s ease;
+        }
+        .input-group button.red {
+            background-color: #dc3545;
+        }
+        .input-group button.red:hover {
+            background-color: #c82333;
+        }
+        .input-group button:hover {
+            background-color: #218838;
+        }
+        #messages {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9f7ef;
+            border: 1px solid #d4edda;
+            border-radius: 5px;
+            color: #155724;
+            font-size: 0.9em;
+        }
+        #messages.error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .status-indicator {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .status-indicator.connected {
+            color: #28a745;
+        }
+        .status-indicator.disconnected {
+            color: #dc3545;
+        }
+        #boardInfo {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        /* Toggle Switch CSS */
+        .toggle-switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .slider.round {
+            border-radius: 34px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        .similar-tags-list { /* Changed from grid to list */
+            display: flex;
+            flex-direction: column; /* Stack items vertically */
+            gap: 5px; /* Smaller gap for list items */
+            margin-top: 15px;
+        }
+        .similar-tag-item {
+            background-color: #f0f0f0;
+            padding: 8px 12px; /* Slightly less padding */
+            border-radius: 5px;
+            text-align: left; /* Align text to left */
+            display: flex; /* Use flex for internal alignment */
+            justify-content: space-between; /* Space between tag name and distance */
+            align-items: center; /* Vertically align items */
+        }
+        .similar-tag-item .tag-name {
+            font-weight: bold;
+            font-size: 1.1em; /* Slightly larger font */
+            color: #333;
+        }
+        .similar-tag-item .tag-distance {
+            font-size: 0.95em; /* Slightly larger font */
+            color: #666;
+            margin-left: 10px; /* Add some space from the tag name */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AS7341 센서 데이터 모니터링</h1>
+
+        <div class="status-indicator" id="connectionStatus">서버 연결 중...</div>
+
+        <div class="section">
+            <h3>시리얼 포트 설정</h3>
+            <div class="input-group">
+                <select id="serialPortSelect">
+                    <option value="">포트 선택</option>
+                </select>
+                <button onclick="connectSerial()">연결</button>
+            </div>
+            <p id="boardInfo">연결된 보드 정보: 없음</p>
+        </div>
+
+        <div class="section">
+            <h3>실시간 센서 값</h3>
+            <div class="data-grid" id="realtimeData">
+                <div class="data-item"><strong>F1 (415nm Violet)</strong> <span id="f1">N/A</span></div>
+                <div class="data-item"><strong>F2 (445nm Indigo)</strong> <span id="f2">N/A</span></div>
+                <div class="data-item"><strong>F3 (480nm Blue)</strong> <span id="f3">N/A</span></div>
+                <div class="data-item"><strong>F4 (515nm Cyan)</strong> <span id="f4">N/A</span></div>
+                <div class="data-item"><strong>F5 (555nm Green)</strong> <span id="f5">N/A</span></div>
+                <div class="data-item"><strong>F6 (590nm Yellow)</strong> <span id="f6">N/A</span></div>
+                <div class="data-item"><strong>F7 (630nm Orange)</strong> <span id="f7">N/A</span></div>
+                <div class="data-item"><strong>F8 (680nm Red)</strong> <span id="f8">N/A</span></div>
+                <div class="data-item"><strong>Clear</strong> <span id="clear">N/A</span></div>
+                <div class="data-item"><strong>NIR (Near-IR)</strong> <span id="nir">N/A</span></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>데이터 캡처 및 저장</h3>
+            <div class="input-group">
+                <input type="text" id="tagInput" placeholder="데이터에 붙일 태그 (예: 사과, 바나나)">
+                <button onclick="captureData()">캡처 및 저장</button>
+            </div>
+            <div id="messages"></div>
+        </div>
+
+        <div class="section">
+            <h3>실시간 유사 태그 찾기</h3>
+            <div class="toggle-switch-container">
+                <span>검색 비활성화</span>
+                <label class="switch">
+                    <input type="checkbox" id="similarityToggle" onchange="toggleSimilaritySearch()">
+                    <span class="slider round"></span>
+                </label>
+                <span>검색 활성화</span>
+            </div>
+            <div id="similarTagResult" class="similar-tags-list"></div>
+        </div>
+
+        <div class="section">
+            <h3>서버 제어</h3>
+            <div class="input-group">
+                <button class="red" onclick="shutdownServer()">서버 종료</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io(); // Socket.IO 서버에 연결
+
+        const realtimeDataElements = {
+            f1: document.getElementById('f1'),
+            f2: document.getElementById('f2'),
+            f3: document.getElementById('f3'),
+            f4: document.getElementById('f4'),
+            f5: document.getElementById('f5'),
+            f6: document.getElementById('f6'),
+            f7: document.getElementById('f7'),
+            f8: document.getElementById('f8'),
+            clear: document.getElementById('clear'),
+            nir: document.getElementById('nir')
+        };
+        const tagInput = document.getElementById('tagInput');
+        const messagesDiv = document.getElementById('messages');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const serialPortSelect = document.getElementById('serialPortSelect');
+        const boardInfo = document.getElementById('boardInfo');
+        const similarTagResultDiv = document.getElementById('similarTagResult');
+
+        // Socket.IO 연결 이벤트
+        socket.on('connect', () => {
+            console.log('Socket.IO 서버에 연결됨');
+            connectionStatus.textContent = '서버 연결됨';
+            connectionStatus.className = 'status-indicator connected';
+            displayMessage('서버에 연결되었습니다. 시리얼 포트 목록을 불러오는 중...', false);
+            socket.emit('request_ports'); // 연결 시 사용 가능한 포트 요청
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Socket.IO 서버 연결 해제됨');
+            connectionStatus.textContent = '서버 연결 해제됨';
+            connectionStatus.className = 'status-indicator disconnected';
+            displayMessage('서버 연결이 해제되었습니다.', true);
+            boardInfo.textContent = '연결된 보드 정보: 없음';
+        });
+
+        // 사용 가능한 시리얼 포트 목록 수신
+        socket.on('available_ports', (data) => {
+            serialPortSelect.innerHTML = '<option value="">포트 선택</option>'; // 기존 옵션 초기화
+            if (data.ports && data.ports.length > 0) {
+                data.ports.forEach(port => {
+                    const option = document.createElement('option');
+                    option.value = port.port;
+                    option.textContent = `${port.port} (${port.desc})`;
+                    serialPortSelect.appendChild(option);
+                });
+                displayMessage('시리얼 포트 목록을 불러왔습니다. 포트를 선택하고 연결하세요.', false);
+            } else {
+                displayMessage('사용 가능한 시리얼 포트가 없습니다.', true);
+            }
+        });
+
+        // 시리얼 포트 연결 성공
+        socket.on('serial_connected', (response) => {
+            displayMessage(`${response.message}`, false);
+            boardInfo.textContent = `연결된 보드 정보: ${response.port}`; // 간단하게 포트 이름만 표시
+            // 실제 보드 정보 (desc, hwid)를 표시하려면 백엔드에서 해당 정보를 함께 보내줘야 합니다.
+        });
+
+        // 실시간 센서 데이터 업데이트 이벤트
+        socket.on('sensor_update', (data) => {
+            console.log('Received sensor update:', data); // 디버깅을 위한 추가
+            for (const key in data) {
+                if (realtimeDataElements[key.toLowerCase()]) {
+                    realtimeDataElements[key.toLowerCase()].textContent = data[key];
+                }
+            }
+        });
+
+        // 데이터 캡처 성공 이벤트
+        socket.on('capture_success', (response) => {
+            console.log('캡처 성공:', response);
+            displayMessage(`데이터 캡처 및 저장 성공: ${response.data[0]} - ${response.data.slice(1).join(', ')}`, false);
+            tagInput.value = ''; // 입력 필드 초기화
+        });
+
+        // 데이터 캡처 오류 이벤트
+        socket.on('capture_error', (response) => {
+            console.error('캡처 오류:', response);
+            displayMessage(`오류: ${response.message}`, true);
+        });
+
+        // 시리얼 포트 오류 이벤트
+        socket.on('serial_error', (response) => {
+            console.error('시리얼 오류:', response);
+            displayMessage(`시리얼 포트 오류: ${response.message}`, true);
+            boardInfo.textContent = '연결된 보드 정보: 없음';
+        });
+
+        // 유사 태그 찾기 성공 이벤트 (기존)
+        socket.on('similar_tag_found', (response) => {
+            similarTagResultDiv.innerHTML = `<p>가장 유사한 태그: <strong>${response.tag}</strong> (거리: ${response.distance})</p>`;
+            similarTagResultDiv.className = ''; // Clear any error styling
+        });
+
+        // 실시간 유사 태그 목록 업데이트 이벤트 (신규)
+        socket.on('similar_tags_update', (data) => {
+            similarTagResultDiv.innerHTML = ''; // 기존 내용 초기화
+            if (data.tags && data.tags.length > 0) {
+                data.tags.forEach(item => {
+                    const tagElement = document.createElement('div');
+                    tagElement.className = 'similar-tag-item';
+                    // Calculate similarity percentage
+                    const similarityPercentage = ((1 - parseFloat(item.distance)) * 100).toFixed(2);
+                    tagElement.innerHTML = `<div class="tag-name">${item.tag}</div><div class="tag-distance">거리: ${item.distance} (${similarityPercentage}%)</div>`;
+                    similarTagResultDiv.appendChild(tagElement);
+                });
+            } else {
+                similarTagResultDiv.innerHTML = '<p>유사한 태그를 찾을 수 없습니다.</p>';
+            }
+        });
+
+        // 유사 태그 찾기 오류 이벤트
+        socket.on('similar_tag_error', (response) => {
+            similarTagResultDiv.innerHTML = `<p style="color: red;">유사 태그 찾기 오류: ${response.message}</p>`;
+        });
+
+        // 메시지 표시 함수
+        function displayMessage(message, isError) {
+            messagesDiv.textContent = message;
+            messagesDiv.className = isError ? 'error' : '';
+        }
+
+        // 시리얼 포트 연결 요청 함수
+        function connectSerial() {
+            const selectedPort = serialPortSelect.value;
+            if (selectedPort) {
+                socket.emit('connect_serial_port', { port: selectedPort });
+                displayMessage(`${selectedPort} 포트에 연결 시도 중...`, false);
+            } else {
+                displayMessage('연결할 시리얼 포트를 선택해주세요.', true);
+            }
+        }
+
+        // 데이터 캡처 요청 함수
+        function captureData() {
+            const tag = tagInput.value.trim();
+            if (tag) {
+                socket.emit('capture_data', { tag: tag });
+                displayMessage('데이터 캡처 요청 중...', false);
+            } else {
+                displayMessage('태그를 입력해주세요.', true);
+            }
+        }
+
+        // 실시간 유사 태그 검색 토글 함수
+        function toggleSimilaritySearch() {
+            const toggle = document.getElementById('similarityToggle');
+            if (toggle.checked) {
+                socket.emit('start_similarity_search');
+                similarTagResultDiv.innerHTML = '<p>실시간 유사 태그 검색 시작...</p>';
+            } else {
+                socket.emit('stop_similarity_search');
+                similarTagResultDiv.innerHTML = ''; // 검색 중지 시 내용 초기화
+            }
+        }
+
+        // 서버 종료 요청 함수
+        function shutdownServer() {
+            if (confirm('정말로 서버를 종료하시겠습니까?')) {
+                fetch('/shutdown', {
+                    method: 'POST'
+                }).then(response => {
+                    if (response.ok) {
+                        displayMessage('서버 종료 요청을 보냈습니다.', false);
+                        console.log('서버 종료 요청 성공');
+                    } else {
+                        displayMessage('서버 종료 요청 실패.', true);
+                        console.error('서버 종료 요청 실패');
+                    }
+                }).catch(error => {
+                    displayMessage(`서버 종료 중 오류 발생: ${error}`, true);
+                    console.error('서버 종료 중 오류 발생:', error);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
