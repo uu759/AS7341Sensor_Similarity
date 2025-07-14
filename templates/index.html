@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
             color: #333;
             line-height: 1.6;
         }
+
         .container {
             max-width: 800px;
             margin: 0 auto;
@@ -21,11 +23,14 @@
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
-        h1, h2 {
+
+        h1,
+        h2 {
             color: #2c3e50;
             text-align: center;
             margin-bottom: 25px;
         }
+
         .section {
             margin-bottom: 30px;
             padding: 20px;
@@ -33,6 +38,7 @@
             border-radius: 6px;
             background-color: #fafafa;
         }
+
         .section h3 {
             margin-top: 0;
             color: #34495e;
@@ -40,11 +46,13 @@
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
+
         .data-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 15px;
         }
+
         .data-item {
             background-color: #e9ecef;
             padding: 12px 15px;
@@ -52,20 +60,23 @@
             text-align: center;
             font-size: 0.95em;
             color: #555;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
         }
+
         .data-item strong {
             display: block;
             font-size: 1.1em;
             color: #007bff;
             margin-bottom: 5px;
         }
+
         .input-group {
             display: flex;
             gap: 10px;
             margin-top: 15px;
             align-items: center;
         }
+
         .input-group input[type="text"],
         .input-group select {
             flex-grow: 1;
@@ -74,6 +85,7 @@
             border-radius: 5px;
             font-size: 1em;
         }
+
         .input-group button {
             padding: 10px 20px;
             background-color: #28a745;
@@ -84,15 +96,19 @@
             font-size: 1em;
             transition: background-color 0.2s ease;
         }
+
         .input-group button.red {
             background-color: #dc3545;
         }
+
         .input-group button.red:hover {
             background-color: #c82333;
         }
+
         .input-group button:hover {
             background-color: #218838;
         }
+
         #messages {
             margin-top: 20px;
             padding: 15px;
@@ -102,27 +118,33 @@
             color: #155724;
             font-size: 0.9em;
         }
+
         #messages.error {
             background-color: #f8d7da;
             border-color: #f5c6cb;
             color: #721c24;
         }
+
         .status-indicator {
             text-align: center;
             margin-bottom: 20px;
             font-weight: bold;
         }
+
         .status-indicator.connected {
             color: #28a745;
         }
+
         .status-indicator.disconnected {
             color: #dc3545;
         }
+
         #boardInfo {
             margin-top: 10px;
             font-size: 0.9em;
             color: #666;
         }
+
         /* Toggle Switch CSS */
         .toggle-switch-container {
             display: flex;
@@ -131,17 +153,20 @@
             gap: 15px;
             margin-bottom: 20px;
         }
+
         .switch {
             position: relative;
             display: inline-block;
             width: 60px;
             height: 34px;
         }
-        .switch input { 
+
+        .switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
+
         .slider {
             position: absolute;
             cursor: pointer;
@@ -152,6 +177,7 @@
             background-color: #ccc;
             transition: .4s;
         }
+
         .slider:before {
             position: absolute;
             content: "";
@@ -162,48 +188,60 @@
             background-color: white;
             transition: .4s;
         }
-        input:checked + .slider {
+
+        input:checked+.slider {
             background-color: #2196F3;
         }
-        input:focus + .slider {
+
+        input:focus+.slider {
             box-shadow: 0 0 1px #2196F3;
         }
-        input:checked + .slider:before {
+
+        input:checked+.slider:before {
             transform: translateX(26px);
         }
+
         .slider.round {
             border-radius: 34px;
         }
+
         .slider.round:before {
             border-radius: 50%;
         }
-        .similar-tags-list { /* Changed from grid to list */
+
+        .similar-tags-list {
             display: flex;
-            flex-direction: column; /* Stack items vertically */
-            gap: 5px; /* Smaller gap for list items */
+            flex-direction: column;
+            gap: 5px;
             margin-top: 15px;
         }
+
         .similar-tag-item {
             background-color: #f0f0f0;
-            padding: 8px 12px; /* Slightly less padding */
+            padding: 8px 12px;
             border-radius: 5px;
-            text-align: left; /* Align text to left */
-            display: flex; /* Use flex for internal alignment */
-            justify-content: space-between; /* Space between tag name and distance */
-            align-items: center; /* Vertically align items */
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
         }
+
         .similar-tag-item .tag-name {
             font-weight: bold;
-            font-size: 1.1em; /* Slightly larger font */
+            font-size: 1.1em;
             color: #333;
         }
+
         .similar-tag-item .tag-distance {
-            font-size: 0.95em; /* Slightly larger font */
+            font-size: 0.95em;
             color: #666;
-            margin-left: 10px; /* Add some space from the tag name */
+            margin-left: 10px;
+
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>AS7341 센서 데이터 모니터링</h1>
@@ -326,7 +364,7 @@
         socket.on('serial_connected', (response) => {
             displayMessage(`${response.message}`, false);
             boardInfo.textContent = `연결된 보드 정보: ${response.port}`; // 간단하게 포트 이름만 표시
-            // 실제 보드 정보 (desc, hwid)를 표시하려면 백엔드에서 해당 정보를 함께 보내줘야 합니다.
+
         });
 
         // 실시간 센서 데이터 업데이트 이벤트
@@ -362,7 +400,7 @@
         // 유사 태그 찾기 성공 이벤트 (기존)
         socket.on('similar_tag_found', (response) => {
             similarTagResultDiv.innerHTML = `<p>가장 유사한 태그: <strong>${response.tag}</strong> (거리: ${response.distance})</p>`;
-            similarTagResultDiv.className = ''; // Clear any error styling
+            similarTagResultDiv.className = '';
         });
 
         // 실시간 유사 태그 목록 업데이트 이벤트 (신규)
@@ -372,7 +410,7 @@
                 data.tags.forEach(item => {
                     const tagElement = document.createElement('div');
                     tagElement.className = 'similar-tag-item';
-                    // Calculate similarity percentage
+                    // 유사도 계산
                     const similarityPercentage = ((1 - parseFloat(item.distance)) * 100).toFixed(2);
                     tagElement.innerHTML = `<div class="tag-name">${item.tag}</div><div class="tag-distance">거리: ${item.distance} (${similarityPercentage}%)</div>`;
                     similarTagResultDiv.appendChild(tagElement);
@@ -415,7 +453,7 @@
             }
         }
 
-        // 실시간 유사 태그 검색 토글 함수
+        // 실시간 유사 태그 검색 토글
         function toggleSimilaritySearch() {
             const toggle = document.getElementById('similarityToggle');
             if (toggle.checked) {
@@ -448,4 +486,5 @@
         }
     </script>
 </body>
+
 </html>
