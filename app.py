@@ -92,13 +92,13 @@ def read_from_serial():
                 socketio.emit('serial_error', {'message': f'시리얼 통신 오류: {e}'})
                 ser = None
                 thread_stop_event.set()
-                time.sleep(1)
+                time.sleep(0.01)
             except Exception as e:
                 print(f"데이터 처리 중 오류: {e}")
                 socketio.emit('serial_error', {'message': f'데이터 처리 중 오류: {e}'})
-                time.sleep(1)
+                time.sleep(0.01)
         else:
-            time.sleep(1)
+            time.sleep(0.01)
 
 # --- 유사 태그 찾기 함수 ---
 

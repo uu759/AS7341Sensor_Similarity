@@ -64,5 +64,5 @@ void loop()
   Serial.print(",");
   Serial.println(dataTwo.ADNIR);
 
-  delay(50); // 0.05초마다 데이터 전송
+  delay(10); // 0.01초마다 데이터 전송
 }
